@@ -8,4 +8,8 @@ data
 
 # images
 
+# secrets
+.env
+secret.txt
+
 # misc

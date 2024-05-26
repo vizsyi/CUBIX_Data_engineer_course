@@ -13,3 +13,4 @@ data
 secret.txt
 
 # misc
+packages_for_lambda

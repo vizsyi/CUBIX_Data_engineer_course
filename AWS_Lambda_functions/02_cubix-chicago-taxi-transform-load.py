@@ -264,18 +264,18 @@ def lambda_handler(event, context):
                 taxi_trips_data_raw = pd.DataFrame(taxi_trips_data_json)
                 taxi_trips = taxi_trips_transformations(taxi_trips_data_raw)
 
-                company_master_updated = update_master(taxi_trips, company_master, "company_id", "company")
-                payment_type_master_updated = update_master(taxi_trips, payment_type_master, "payment_type_id", "payment_type")
+                company_master = update_master(taxi_trips, company_master, "company_id", "company")
+                payment_type_master = update_master(taxi_trips, payment_type_master, "payment_type_id", "payment_type")
                 
-                print(company_master_updated.columns, company_master_updated.shape)
-                print(payment_type_master_updated.columns, payment_type_master_updated.shape)
-                
-                taxi_trips = update_taxi_trips_with_master_data(taxi_trips, payment_type_master_updated, company_master_updated)
+                print(company_master.columns, company_master.shape)
+                print(payment_type_master.columns, payment_type_master.shape)
+
+                taxi_trips = update_taxi_trips_with_master_data(taxi_trips, payment_type_master, company_master)
                 
                 upload_master_data_to_s3(bucket = bucket, path = payment_type_master_folder,
-                    file_type = "payment_type", dataframe = payment_type_master_updated)
+                    file_type = "payment_type", dataframe = payment_type_master)
                 upload_master_data_to_s3(bucket = bucket, path = company_master_folder,
-                    file_type = "company", dataframe = company_master_updated)
+                    file_type = "company", dataframe = company_master)
                     
                 upload_and_move_file_on_s3(
                     dataframe = taxi_trips,

@@ -129,6 +129,26 @@ def read_csv_from_s3(bucket: str, path: str, filename: str) -> pd.DataFrame:
     
     return output_df
 
+def read_json_from_s3(bucket: str, key: str) -> dict:
+    """
+    Reads a JSON file from an Amazon S3 bucket and returns it as a dictionary.
+
+    Parameters:
+        bucket (str): The name of the S3 bucket.
+        key (str): The key (path) of the JSON file in the S3 bucket.
+
+    Returns:
+        dict: A dictionary containing the data from the JSON file.
+    """
+
+    s3 = boto3.client("s3")
+    
+    response = s3.get_object(Bucket = bucket, Key = key)
+    content = response['Body']
+    json_dict = json.loads(content.read())
+
+    return json_dict
+
 def upload_dataframe_to_s3(dataframe: pd.DataFrame, bucket: str, path: str):
     """
     Uploads a Pandas DataFrame to an Amazon S3 bucket as a CSV file.
@@ -257,9 +277,7 @@ def lambda_handler(event, context):
         if filename != "":
             if taxi_trips_key.split(".")[-1] == "json":
 
-                response = s3.get_object(Bucket = bucket, Key = taxi_trips_key)
-                content = response['Body']
-                taxi_trips_data_json = json.loads(content.read())
+                taxi_trips_data_json = read_json_from_s3(bucket = bucket, key = taxi_trips_key)
                 
                 taxi_trips_data_raw = pd.DataFrame(taxi_trips_data_json)
                 taxi_trips = taxi_trips_transformations(taxi_trips_data_raw)
@@ -297,10 +315,8 @@ def lambda_handler(event, context):
         if filename != "":
             if weather_key.split(".")[-1] == "json":
                 
-                response = s3.get_object(Bucket = bucket, Key = weather_key)
-                content = response['Body']
-                weather_data_json = json.loads(content.read())
-                
+                weather_data_json = read_json_from_s3(bucket = bucket, key = weather_key)
+
                 weather_data = transform_weather_data(weather_data_json)
                 
                 print(weather_data.columns, weather_data.shape)
